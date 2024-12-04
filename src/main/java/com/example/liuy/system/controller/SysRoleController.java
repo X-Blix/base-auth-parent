@@ -30,8 +30,6 @@ public class SysRoleController {
     @GetMapping("/findAll")
     public Result<List<SysRole>> findAll() {
 
-        //TODO 模拟异常效果
-        int i = 9/0;
         List<SysRole> roleList = sysRoleService.list();
         return Result.ok(roleList);
     }
@@ -69,6 +67,11 @@ public class SysRoleController {
     //4.添加角色
     @ApiOperation(value = "新增角色")
     @PostMapping("/save")
+
+//    知识点：
+//
+//    @RequestBody，不能使用get提交方式
+//    传递json格式数据，把json格式数据封装到对象里面
     public Result save(@RequestBody SysRole role) {
         boolean isSucess = sysRoleService.save(role);
         if (isSucess) {
@@ -80,10 +83,16 @@ public class SysRoleController {
 
     //5.修改
     @ApiOperation(value = "修改角色")
-    @PutMapping("/update")
+//    @PutMapping("/update")
+    @PostMapping("/update")
+
     public Result updateById(@RequestBody SysRole role) {
-        sysRoleService.updateById(role);
-        return Result.ok();
+        boolean b = sysRoleService.updateById(role);
+        if (b) {
+            return Result.ok();
+        }else{
+            return Result.fail();
+        }
     }
 
 
@@ -101,8 +110,8 @@ public class SysRoleController {
 
     //7.根据id查询
     @ApiOperation(value = "查询角色")
-    @GetMapping("/find/{id}")
-    public Result findRoleById(@PathVariable Long id){
+    @GetMapping("/findRoleById/{id}")
+    public Result get(@PathVariable Long id){
         SysRole sysRole = sysRoleService.getById(id);
         return Result.ok(sysRole);
     }

@@ -75,7 +75,29 @@ A
 
 
 
-知识点：
 
-@RequestBody，不能使用get提交方式
-传递json格式数据，把json格式数据封装到对象里面
+### 第三次提交：
+
+- 硬编码 IndexController ，提供登录接口以便前端调用测试
+注意：@Mapping要和前端提交方式对应
+
+修改application-dev.properties里的日期时间配置
+spring.jackson.date-format= yyyy-MM-dd HH:mm:ss
+spring.jackson.time-zone= GMT+8
+
+
+```
+知识点：
+@RequestBody 不能使用get提交方式
+//传递json格式数据，把json格式数据封装到对象里面 
+
+对比：@PathVariable 
+这个会影响到前端api里的传参格式
+
+```
+
+```
+如果前端在修改的时候报错的话：
+1.检查SysRoleController里的方法7，接口有没有写错，要和前端对应起来
+2. 如果前端传递过来数据报错找不到post方法时：检查方法5的提交方法有没有写错
+```
