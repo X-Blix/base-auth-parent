@@ -3,9 +3,12 @@ package com.example.liuy.system.controller;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.liuy.common.result.Result;
+
 import com.example.liuy.model.system.SysRole;
+import com.example.liuy.model.vo.AssginRoleVo;
 import com.example.liuy.model.vo.SysRoleQueryVo;
 import com.example.liuy.system.service.SysRoleService;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -13,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 
 @Api(tags = "角色管理")
@@ -114,6 +118,24 @@ public class SysRoleController {
     public Result get(@PathVariable Long id){
         SysRole sysRole = sysRoleService.getById(id);
         return Result.ok(sysRole);
+    }
+
+
+
+
+    @ApiOperation(value = "根据用户获取角色数据")
+    @GetMapping("/toAssign/{userId}")
+    public Result toAssign(@PathVariable String userId) {
+        Map<String, Object> roleMap = sysRoleService.getRolesByUserId(userId);
+        return Result.ok(roleMap);
+    }
+
+
+    @ApiOperation(value = "根据用户分配角色")
+    @PostMapping("/doAssign")
+    public Result doAssign(@RequestBody AssginRoleVo assginRoleVo) {
+        sysRoleService.doAssign(assginRoleVo);
+        return Result.ok();
     }
 
 }

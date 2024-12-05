@@ -101,3 +101,81 @@ spring.jackson.time-zone= GMT+8
 1.检查SysRoleController里的方法7，接口有没有写错，要和前端对应起来
 2. 如果前端传递过来数据报错找不到post方法时：检查方法5的提交方法有没有写错
 ```
+
+### 第四次提交：
+用户管理：一个用户可以有多个角色。一个角色可以有多个用户
+
+- 一、mybatis 代码生成器 (https://baomidou.com/guides/code-generator/)
+  1. 导入pom依赖   
+     mybatis-plus-generator + velocity-engine-core
+  2. 创建代码生成器
+     CodeGenerator放在test下的文件夹里（报错：将mybatis-plus-generator版本换成3.4.1）
+    ```
+    codeGenerator只生成文件夹，但文件夹里面没有相应的文件？
+    检查后猜测：navicat里没有sys_user这个表
+    因为navicat导入表的时候有些表没有导入进来
+    奇怪的错误。已解决
+    ```
+  
+```
+成就：修改出来了一个好用的MYbatis-Plus的CodeGenerator代码
+```
+
+  3.改成适合原来的项目结构的格式(略)
+
+- 二、用户管理接口
+    1.在Controller里编写相应的接口
+    2.在Service和ServiceImpl里写相应的接口
+    顺序：Controller->Service->ServiceImpl->Mapper.java - >Mapper.xml
+    3.在swagger接口里测试增改删查和分页接口没有问题
+```
+错误：
+XML fragments parsed from previous mappers already contains value
+
+把xml的namespace改掉，要对应起来（有可能找不到bean报错也是因为这个原因）
+
+```
+其他：
+
+  A
+   - 在表sys_user 中 删除掉了一些 人名 
+     这些人名在dept_id(部门id) , post_id(岗位id) 均有数值
+    不知道删掉对后面的部门管理和岗位管理有没有影响。有影响的话得再拿回来。
+
+
+**更改用户状态**
+需求分析：用户状态：状态（1：正常 0：停用），
+        当用户状态为正常时，可以访问后台系统，
+        当用户状态停用后，不可以登录后台系统
+
+1. 数据库中sys_user中的status设置默认值：1
+2. 在 SysUserController 中编写 方法：updateStatus
+   在 SysUserServiceImpl中实现方法
+
+**给用户分配角色**
+需求分析：
+1. 进入分配页面：获取已分配角色与全部角色，进行页面展示
+2. 保存分配角色：删除之前分配的角色和保存现在分配的角色
+
+- 编写SusUserRoleMapper接口
+- 在SysRoleController中编写接口：1/ 根据用户获取角色数据 2/根据用户分配角色
+- 在service里创建方法，并在serviceimpl中实现
+```
+
+问题：
+  @Autowired
+  private SysUserRoleMapper sysUserRoleMapper; 报错 导致 selectList 找不到
+ 文件名字打错了
+ 
+问题： 
+ //获取用户已分配的角色
+  List<SysUserRole> userRoles = sysUserRoleMapper.selectList(queryWrapper);报错：
+  不兼容的类型
+  
+SysUserRoleMapper里的泛型是<SysUserRole>！
+SysUserRoleMapper里的泛型是<SysUserRole>！
+SysUserRoleMapper里的泛型是<SysUserRole>！
+
+```
+
+
