@@ -121,8 +121,6 @@ public class SysRoleController {
     }
 
 
-
-
     @ApiOperation(value = "根据用户获取角色数据")
     @GetMapping("/toAssign/{userId}")
     public Result toAssign(@PathVariable String userId) {

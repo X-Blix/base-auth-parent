@@ -178,4 +178,242 @@ SysUserRoleMapper里的泛型是<SysUserRole>！
 
 ```
 
+其他：
+    role，user里的数据太乱了，稍微整理了一下
+
+
+### 第五次提交：
+1. 利用 CodeGenerator 生成 sys_menu,并将其修改成适合项目的结构
+```
+ServiceImpl 需要相对应的mapper,不然可能会报错
+
+```
+2. 编写SysMenuController
+  - // 1. 菜单列表（树形）
+  - // 2. 添加菜单
+  - // 3.根据id 查询
+  - // 4.修改
+  - // 5.删除菜单
+
+
+3. ServiceImpl 实现接口
+   - 1. 菜单列表（树形）
+       1.1按照element-ui组件要求格式编写接口返回数据
+           第一步：根据返回数据创建实体类
+           第二步：查询所有菜单，转换要求数据格式
+           菜单有多层，使用递归查询
+       ```
+          //获取所有菜单
+        List<SysMenu> sysMenuList = baseMapper.selectList(null);
+
+        //所有菜单数据转换要求数据格式
+        List<SysMenu> result = MenuHelper.buildTree(sysMenuList);
+
+        return result;
+     ```
+        1.2 在util里创建MenuHelper，也就是帮助菜单实现递归查找的帮助类
+   
+   ```
+    使用递归方法建菜单
+    
+   //使用递归方法建菜单
+   public static List<SysMenu> buildTree(List<SysMenu> sysMenuList) {
+   //遍历集合封装最终数据
+   List<SysMenu> trees = new ArrayList<>();
+   //遍历所有菜单集合
+   for (SysMenu sysMenu : sysMenuList) {
+   //找到递归入口，parentid =0
+   if ("0".equals(sysMenu.getParentId())) {
+   trees.add(findChildren(sysMenu,sysMenuList));
+   }
+   }
+   return trees;
+   }
+   
+   
+   
+   递归查找子节点
+   
+   public static SysMenu findChildren(SysMenu sysMenu, List<SysMenu> treeNodes) {
+        sysMenu.setChildren(new ArrayList<SysMenu>());
+
+        for (SysMenu it : treeNodes) {
+            if(sysMenu.getId().equals(it.getParentId())) {
+                if (sysMenu.getChildren() == null) {
+                    sysMenu.setChildren(new ArrayList<>());
+                }
+                sysMenu.getChildren().add(findChildren(it,treeNodes));
+            }
+        }
+        return sysMenu;
+    }
+     
+        ```
+     
+   
+   
+   
+  菜单列表（树形）要使用递归的方法来实现。在这个过程中需要使用到配置类MenuHelper
+  要得到所有的菜单，然后找到菜单里的根节点。然后再找到根节点下的子节点。(怎么找？)
+  用当前节点的id,再找到谁的parentid和他是一样的，然后把他们放在一起。
+  一直向下进行这个过程（递归），然后不断向下找，直到找不到为止。
+
+```
+问题：
+ Error creating bean with name 'sysMenuController': Unsatisfied dependency expressed through field 'sysMenuService'
+
+答案：
+    SysMenuServiceImpl里没有@Autowried SysMenuService
+    Mapper层没有加 @Repository ，@Mapper 注释
+```
+****上一级的id是下一级的parent_id**
+
+**上一级的id是下一级的parent_id**
+
+**上一级的id是下一级的parent_id****
+然后就可以递归了
+
+
+- 2 修改删除接口
+    因为在删除的时候，是只删除了单个接口，而不是关联他的子节点和父节点：所以要进行判断：
+
+    SysMenuServiceImpl里重写removeMenuById接口。添加SysRoleMenuMapper的Autowired
+    添加SysRoleMenuMapper文件
+
+测试没有问题。
+
+```
+如果前端的sysMenu/list 确定没问题的话：
+但是在删除的时候报错：
+
+那么可能是后端删除的接口写错了...
+是@DeleteMapping 不是 @PostMapping 
+```
+
+知识：
+@Transactional  注解，对整个类的方法，事务起作用。无异常时正常提交，有异常时数据回滚
+
+
+
+**4. 给角色分配权限**
+
+接口分析
+1. 进入分配页面 : 获取全部菜单及按钮，选中已选复选框，进行页面展示
+2. 保存分配权限 : 删除之前分配的权限和保存现在分配的权限
+
+
+###### 第一个:根据角色获取菜单
+
+ - 在   SysMenuController 里 编写 接口
+    ```
+     //1.根据角色获取菜单
+    @ApiOperation(value = "根据角色获取菜单")
+    @GetMapping("/toAssign/{roleId}")
+    public Result toAssign(@PathVariable String roleId) {
+        List<SysMenu> list = sysMenuService.findSysMenuByRoleId(roleId);
+        return Result.ok(list);
+    }
+
+    ```
+
+- 在 SysMenuService 里  编写 方法
+```
+    List<SysMenu> findSysMenuByRoleId(String roleId);
+```
+
+- 在SysMenuServiceImpl 里 实现 方法 
+```
+    @Override
+    public List<SysMenu> findSysMenuByRoleId(String roleId) {
+        //1.获取所有status为1的权限列表 （和获取所有菜单 status = 1）
+        List<SysMenu> menuList = sysMenuMapper.selectList(new QueryWrapper<SysMenu>().eq("status", 1));
+
+        //2.根据角色id获取角色权限(根据角色id查询角色分配过的菜单列表)
+        List<SysRoleMenu> roleMenus = sysRoleMenuMapper.selectList(new QueryWrapper<SysRoleMenu>().eq("role_id",roleId));
+
+        //3.获取该角色已分配的所有权限id(从第二步的菜单列表中，获取（角色分配所有的）菜单id)
+        List<String> roleMenuIds = new ArrayList<>();
+        for (SysRoleMenu roleMenu : roleMenus) {
+            roleMenuIds.add(roleMenu.getMenuId());
+        }
+
+        //4.遍历所有权限列表（数据处理）：
+        /*
+            如果菜单选中是true，否则是false
+            拿着分配菜单id 和 所有菜单对比 ，有相同的，让isSelect 值 为 true
+        * */
+        for (SysMenu sysMenu : menuList){
+            if(roleMenuIds.contains(sysMenu.getId())){
+                //设置该权限已被分配
+                sysMenu.setSelect(true);
+            }else {
+                sysMenu.setSelect(false);
+            }
+        }
+
+        //5.将权限列表转换为权限树 （转换成树形结构进行最终显示）
+        List<SysMenu> sysMenus = MenuHelper.buildTree(menuList);
+        return sysMenus;
+
+    }
+
+```
+- 创建 sysRoleMenuMapper ：
+```
+  @Repository
+  @Mapper
+  public interface SysRoleMenuMapper extends BaseMapper<SysRoleMenu> {
+
+}
+```
+并在 SysMenuServiceImpl 导入 
+```
+
+@Autowired
+    private SysRoleMenuMapper sysRoleMenuMapper;
+    
+```
+
+
+###### 第二个:给角色分配菜单权限
+- 在 SysMenuController 里 编写 接口
+     ```
+    @ApiOperation(value = "给角色分配菜单权限")
+    @PostMapping("/doAssign")
+    public Result doAssign(@RequestBody AssginMenuVo assginMenuVo) {
+        sysMenuService.doAssign(assginMenuVo);
+        return Result.ok();
+    }
+  
+     ```
+
+- 在 SysMenuService 里  编写 方法
+```
+    //根据角色获取菜单
+    void doAssign(AssginMenuVo assginMenuVo);
+    
+```
+- 在SysMenuServiceImpl 里 实现 方法 
+```
+//给角色分配权限
+    @Override
+    public void doAssign(AssginMenuVo assginMenuVo) {
+        //删除已分配的权限(根据角色id删除菜单权限)
+        sysRoleMenuMapper.delete(new QueryWrapper<SysRoleMenu>().eq("role_id",assginMenuVo.getRoleId()));
+
+        //遍历所有已选择的权限id（遍历菜单列表，一个一个进行添加）
+        for (String menuId : assginMenuVo.getMenuIdList()){
+            if(menuId != null){
+                //创建SysRoleMenu对象
+                SysRoleMenu sysRoleMenu = new SysRoleMenu();
+                sysRoleMenu.setMenuId(menuId);
+                sysRoleMenu.setRoleId(assginMenuVo.getRoleId());
+                //添加新权限
+                sysRoleMenuMapper.insert(sysRoleMenu);
+            }
+        }
+
+    }
+```
+
 
