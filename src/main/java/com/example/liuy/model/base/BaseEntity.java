@@ -1,0 +1,30 @@
+package com.example.liuy.model.base;
+
+import com.baomidou.mybatisplus.annotation.*;
+import lombok.Data;
+
+import java.io.Serializable;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+
+@Data
+public class BaseEntity implements Serializable {
+
+    @TableId(type = IdType.ASSIGN_ID)
+    private String id;
+
+    @TableField(value = "create_time",fill = FieldFill.INSERT)
+    private Date createTime;
+
+    @TableField(value = "update_time",fill = FieldFill.INSERT_UPDATE)
+    private Date updateTime;
+
+  //逻辑删除 默认效果 0 没有删除 1 已经删除
+    @TableLogic
+    @TableField(value = "is_deleted")
+    private Integer isDeleted;
+
+    @TableField(exist = false)
+    private Map<String,Object> param = new HashMap<>();
+}
