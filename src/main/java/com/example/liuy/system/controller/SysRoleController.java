@@ -13,6 +13,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -30,6 +31,8 @@ public class SysRoleController {
 // http://localhost:5240/admin/system/sysRole/findAll
 
     //1.查询所有接口
+
+    @PreAuthorize("hasAuthority('bnt.sysRole.list')")
     @ApiOperation(value = "获取全部角色列表")
     @GetMapping("/findAll")
     public Result<List<SysRole>> findAll() {
@@ -40,6 +43,7 @@ public class SysRoleController {
 
 
     //2.逻辑删除角色
+    @PreAuthorize("hasAuthority('bnt.sysRole.remove')")
     @ApiOperation(value = "删除角色")
     @DeleteMapping("/remove/{id}")
     public Result remove(@PathVariable String id) {
@@ -52,6 +56,7 @@ public class SysRoleController {
     }
 
     //3.条件分页查询接口
+    @PreAuthorize("hasAuthority('bnt.sysRole.list')")
     @ApiOperation(value = "条件分页查询")
     @GetMapping("/{page}/{limit}")
     public Result findPageQueryRole(
@@ -69,6 +74,7 @@ public class SysRoleController {
     }
 
     //4.添加角色
+    @PreAuthorize("hasAuthority('bnt.sysRole.add')")
     @ApiOperation(value = "新增角色")
     @PostMapping("/save")
 
@@ -86,6 +92,7 @@ public class SysRoleController {
     }
 
     //5.修改
+    @PreAuthorize("hasAuthority('bnt.sysRole.update')")
     @ApiOperation(value = "修改角色")
 //    @PutMapping("/update")
     @PostMapping("/update")
@@ -101,6 +108,7 @@ public class SysRoleController {
 
 
     //6.批量删除
+    @PreAuthorize("hasAuthority('bnt.sysRole.remove')")
     @ApiOperation(value = "批量删除角色")
     @DeleteMapping("/batchRemove")
     public Result batchRemove(@RequestBody List<Long> idList) {
@@ -113,6 +121,7 @@ public class SysRoleController {
     }
 
     //7.根据id查询
+    @PreAuthorize("hasAuthority('bnt.sysRole.list')")
     @ApiOperation(value = "查询角色")
     @GetMapping("/findRoleById/{id}")
     public Result get(@PathVariable Long id){
@@ -121,6 +130,7 @@ public class SysRoleController {
     }
 
 
+    @PreAuthorize("hasAuthority('bnt.sysRole.list')")
     @ApiOperation(value = "根据用户获取角色数据")
     @GetMapping("/toAssign/{userId}")
     public Result toAssign(@PathVariable String userId) {
@@ -129,6 +139,7 @@ public class SysRoleController {
     }
 
 
+    @PreAuthorize("hasAuthority('bnt.sysUser.assignRole')")
     @ApiOperation(value = "根据用户分配角色")
     @PostMapping("/doAssign")
     public Result doAssign(@RequestBody AssginRoleVo assginRoleVo) {

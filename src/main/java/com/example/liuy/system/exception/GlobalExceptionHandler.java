@@ -1,6 +1,8 @@
 package com.example.liuy.system.exception;
 
 import com.example.liuy.common.result.Result;
+import com.example.liuy.common.result.ResultCodeEnum;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -45,4 +47,26 @@ public class GlobalExceptionHandler {
                 throw new GuiguException(20001,"出现自定义异常");
             }
     */
+
+/*
+    @ExceptionHandler(CacheExpiredException.class)
+    @ResponseBody
+    public Result error(CacheExpiredException e){
+        e.printStackTrace();
+        return Result.fail().message(e.getMessage()).code(e.getCode());
+    }
+*/
+
+    /**
+     * spring security异常
+     * @param e
+     * @return
+     */
+    @ExceptionHandler(AccessDeniedException.class)
+    @ResponseBody
+    public Result error(AccessDeniedException e) throws AccessDeniedException {
+//        return Result.build(null, ResultCodeEnum.PERMISSION);
+        return Result.fail().code(ResultCodeEnum.PERMISSION.getCode()).message("没有当前功能操作权限");
+    }
+
 }

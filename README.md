@@ -746,3 +746,307 @@ SysmenuMapper修改成：
 ```
 
 调试均正常。后端到此暂时结束
+
+
+### 第七次提交：
+
+已经实现前端菜单及按钮的权限控制，但是服务器端还没加任何控制：
+解释：后端只要知道路径，就可以访问接口 （无论是否登录）
+这是不正确的。需要我们在 页面按钮对应的controller方法上面加对应的权限控制，
+即在进入controller方法前判断当前用户是否有访问权限。
+
+实现方法： 
+- Fillter加Aop 
+-Spring Security、Shiro等一系列开源框架
+
+##### SpringSecurity
+
+Spring 家族中的成员之一.Spring Security 基于 Spring 框架，提供了一套 Web 应用安全性的完整解决方案。
+
+关于安全方面的两个核心功能是“认证”[用户认证（Authentication）]和“授权”[用户授权（Authorization）]，
+
+**用户认证：**系统认为用户是否能登录
+**用户授权：** 系统判断用户是否有权限去做某些事情。
+
+Spring Security
+_Spring 技术栈的组成部分。_
+
+Shiro
+_Apache 旗下的轻量级权限控制框架。_
+
+因此，一般来说，常见的安全管理技术栈的组合是这样的：
+• SSM + Shiro
+• Spring Boot/Spring Cloud + Spring Security
+
+
+##### Spring Security实现权限
+Spring Security进行认证和鉴权的时候,就是利用的一系列的Filter来进行拦截的。
+**UsernamePasswordAuthenticationFilter负责登录认证，FilterSecurityInterceptor负责权限授权。**
+
+
+
+**1.引入模块**
+
+```
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+```
+
+用户名：user ， 密码：控制终端中生成
+登陆上来再访问接口：没有权限的会报错
+
+_输入用户名，密码，成功访问到controller方法并返回数据，说明Spring Security默认安全保护生效。_
+
+**UserDetialsService、UserDetails、PasswordEncoder，这三个组件Spring Security都有默认实现，这一般是满足不了我们的实际需求的，所以这里我们自己来实现这些组件！**
+_在实际开发中，这些默认的配置是不能满足我们需要的，我们需要扩展Spring Security组件，完成自定义配置，实现我们的项目需求。_
+
+**2.添加配置类 WebSecurityConfig**
+```
+@Configuration
+@EnableWebSecurity //@EnableWebSecurity是开启SpringSecurity的默认行为
+@EnableGlobalMethodSecurity(prePostEnabled = true)//开启注解功能，默认禁用注解
+public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
+   
+}
+```
+
+暂时是空的。以后可能要往里面加内容
+
+
+
+**3.用户认证**
+
+_1.自定义密码组件：_
+在 system下新建一个custom文件夹，表示自定义过程。
+在custom下新创建一个类:CustomMd5PasswordEncoder
+
+加密我们项目采取MD5加密
+
+_2.添加CustomUser对象_
+该接口就是我们所说的用户对象，它提供了用户的一些通用属性
+
+
+_3.用户对象UserDetails_
+该接口就是我们所说的用户对象，它提供了用户的一些通用属性,源码如下：
+
+```
+public interface UserDetails extends Serializable {
+	/**
+     * 用户权限集合（这个权限对象现在不管它，到权限时我会讲解）
+     */
+    Collection<? extends GrantedAuthority> getAuthorities();
+    /**
+     * 用户密码
+     */
+    String getPassword();
+    /**
+     * 用户名
+     */
+    String getUsername();
+    /**
+     * 用户没过期返回true，反之则false
+     */
+    boolean isAccountNonExpired();
+    /**
+     * 用户没锁定返回true，反之则false
+     */
+    boolean isAccountNonLocked();
+    /**
+     * 用户凭据(通常为密码)没过期返回true，反之则false
+     */
+    boolean isCredentialsNonExpired();
+    /**
+     * 用户是启用状态返回true，反之则false
+     */
+    boolean isEnabled();
+}
+
+```
+
+_4. 业务对象UserDetailsService_
+该接口很简单只有一个方法：
+```
+public interface UserDetailsService {
+    /**
+     * 根据用户名获取用户对象（获取不到直接抛异常）
+     */
+    UserDetails loadUserByUsername(String username) throws UsernameNotFoundException;
+}
+
+```
+
+_5.UserDetailsServiceImpl_
+添加UserDetailsServiceImpl类，实现UserDetailsService接口
+
+_6.自定义用户认证接口 TokenLoginFilter _
+之后可能要改
+
+_7.添加工具类：ResponseUtil_
+
+common.utils包下新建ResponseUtil，并在ToekLoginFilter中引入
+
+_8. 认证解析token：TokenAuthenticationFilter_
+之后可能要改
+**因为用户登录状态在token中存储在客户端，所以每次请求接口请求头携带token。
+后台通过自定义token过滤器拦截解析token完成认证并填充用户信息实体。**
+
+_9.配置用户认证 WebSecurityConfig_
+之后可能要改
+
+10.swagger测试接口
+login : 用户名和密码不匹配的时候报错。
+        匹配的时候不报错并返回一个token
+info: 在没有token的时候报错
+     在有token的时候返回内容
+
+
+**4.用户授权**
+- 在SpringSecurity中，会使用默认的FilterSecurityInterceptor来进行权限校验。在FilterSecurityInterceptor中会从SecurityContextHolder获取其中的Authentication，然后获取其中的权限信息。判断当前用户是否拥有访问当前资源所需的权限。
+- 在TokenAuthenticationFilter中获取权限数据：
+    登录时我们把权限数据保存到redis中（用户名为key，权限数据为value），
+    这样通过token获取用户名即可拿到权限数据，
+    这样就可构成出完整的Authentication对象。
+
+_1. 修改loadUserByUsername接口方法_
+
+在 UserDetailsServiceImpl中
+```
+  //根据userid查询操作权限数据
+        List<String> userPermsList = sysMenuService.findUserPermsList(sysUser.getId());
+        //转换security要求格式数据
+        List<SimpleGrantedAuthority> authorities = new ArrayList<>();
+        for (String perm : userPermsList) {
+            authorities.add(new SimpleGrantedAuthority(perm.trim()));
+        }
+        return new CustomUser(sysUser, authorities);
+```
+
+_2.spring-security模块配置redis_
+```
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-data-redis</artifactId>
+</dependency>
+```
+
+_3.修改TokenLoginFilter登录成功方法_
+
+登录成功我们将权限数据保存到reids
+
+```
+
+```
+
+_4、修改TokenAuthenticationFilter_
+认证是redis里面获取权限数据
+
+
+_5.service-system模块添加redis配置_
+application-dev.yml配文件
+
+
+需要提前在电脑上装好redis
+
+```
+spring.redis.host=127.0.0.1
+spring.redis.port=6379
+spring.redis.database= 0
+spring.redis.timeout=60000
+
+spring.redis.lettuce.pool.max-active=20
+spring.redis.lettuce.pool.max-wait=-1
+#最大阻塞等待时间(负数表示没限制)
+spring.redis.lettuce.pool.max-idle=5
+spring.redis.lettuce.pool.min-idle=0
+
+```
+
+
+
+**其他**
+redis现在大部分是用在linux上的，windows上的版本已经很老了。
+先用着老版本把程序跑起来吧...
+https://github.com/MicrosoftArchive/redis/releases
+https://mp.weixin.qq.com/s?__biz=MzU1Nzg4NjgyMw==&mid=2247483695&idx=1&sn=d854bb5d10de5b2fee139effa143c1fd&scene=21#wechat_redirect
+
+
+
+_6.控制controller层接口权限_
+```
+Spring Security默认是禁用注解的，要想开启注解，
+需要在继承WebSecurityConfigurerAdapter的类上加@EnableGlobalMethodSecurity注解，
+来判断用户对某个控制层的方法是否具有访问权限
+```
+**通过@PreAuthorize标签控制controller层接口权限**
+
+
+给SysRoleController中的每个接口添加@PreAuthorize控制权限
+例：
+```
+    //6.批量删除
+    @PreAuthorize("hasAuthority('bnt.sysRole.remove')")
+    @ApiOperation(value = "批量删除角色")
+    @DeleteMapping("/batchRemove")
+    public Result batchRemove(@RequestBody List<Long> idList) {
+        boolean b = sysRoleService.removeByIds(idList);
+        if (b) {
+            return Result.ok();
+        }else{
+            return Result.fail();
+        }
+    }
+
+```
+
+不同的接口，使用PreAuthorize，赋予不同的访问权限（没有给的权限不能访问）
+
+
+_7.测试服务权限_
+(关联前端)
+登录后台，分配权限进行测试，页面如果添加了按钮权限控制，可临时去除方便测试
+
+1. 使用管理员先登录
+2. 给用户分配角色管理的权限（无删除权限）
+3. 使用用户角色登录
+4. 测试权限，发现未分配的删除权限无法操作
+
+无问题
+
+因为是使用redis存储的数据。所以在redis里能看到用户信息
+
+_8.异常处理_
+
+异常处理有2种方式：
+
+1、扩展Spring Security异常处理类：AccessDeniedHandler、AuthenticationEntryPoint
+2、在spring boot全局异常统一处理
+
+第一种方案说明：如果系统实现了全局异常处理，那么全局异常首先会获取AccessDeniedException异常，要想Spring Security扩展异常生效，必须在全局异常再次抛出该异常。
+第二种方案最简单，我们使用第二种方案。
+
+全局异常添加处理：（GlobalExceptionHandler）
+```
+/**
+ * spring security异常
+ * @param e
+ * @return
+ */
+@ExceptionHandler(AccessDeniedException.class)
+@ResponseBody
+public Result error(AccessDeniedException e) throws AccessDeniedException {
+    return Result.build(null, ResultCodeEnum.PERMISSION);
+}
+
+```
+
+在pom里引入依赖
+```
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-security</artifactId>
+    <scope>provided</scope>
+</dependency>
+
+```
