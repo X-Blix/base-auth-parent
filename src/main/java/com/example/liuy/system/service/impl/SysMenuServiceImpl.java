@@ -65,8 +65,8 @@ public class SysMenuServiceImpl extends ServiceImpl<SysMenuMapper, SysMenu> impl
 
 //        //另一种调用删除的方法
 //        baseMapper.deleteById(id);
-            sysMenuMapper.deleteById(id);
-            return false;
+        sysMenuMapper.deleteById(id);
+        return false;
 
     }
 

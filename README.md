@@ -1050,3 +1050,25 @@ public Result error(AccessDeniedException e) throws AccessDeniedException {
 </dependency>
 
 ```
+
+
+### 第八次提交：
+
+1. 部门管理接口
+第一步：先使用 Mybatis-plus的CodeGenerator方法生成 接口等
+第二步：把他们按照项目的结构，放到对应的地方
+第三步：编写SysDeptController
+
+还是menu里的那些
+
+顺序：controller - service - serviceimpl - mapper.java - mapper.xml - 数据库
+
+
+  接口一：部门列表（树形）
+  接口二：部门添加
+  接口三:部门修改
+  接口四：部门删除
+
+
+2.岗位管理接口：仿照角色管理接口进行编写
+

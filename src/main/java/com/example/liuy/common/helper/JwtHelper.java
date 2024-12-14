@@ -74,7 +74,7 @@ public class JwtHelper {
 
     public static void main(String[] args) {
         String token = JwtHelper.createToken("1", "admin");
-        //eyJhbGciOiJIUzUxMiIsInppcCI6IkdaSVAifQ.H4sIAAAAAAAA_6tWKi5NUrJScgwN8dANDXYNUtJRSq0oULIyNDc2tjQyMjMy1lEqLU4t8kwBqjJUgnDyEnNTgdzElNzMPKVaACjWm6pEAAAA.kcXYPWQ_h8E1xwBI-isiWvvhhwEiyybL_nzsx8KXaX_q7eTROocHxG7b2-R1ReH68rXn8kciP12itlMf5V99Hw
+    //    eyJhbGciOiJIUzUxMiIsInppcCI6IkdaSVAifQ.H4sIAAAAAAAA_6tWKi5NUrJScgwN8dANDXYNUtJRSq0oULIyNDc2MTIyszQ20VEqLU4t8kwBqjJUgnDyEnNTgdzElNzMPKVaAL0KtOhEAAAA.7pzZroBLDxBIjSh_8NucCPV4JRc-WcWCjTIcuTAYXCU_F0BUxgYtAmMmBKM1YXcqGewK3xwWJtZrhQSeRH6O8g
         System.out.println(token);
         System.out.println(JwtHelper.getUserId(token));
         System.out.println(JwtHelper.getUsername(token));

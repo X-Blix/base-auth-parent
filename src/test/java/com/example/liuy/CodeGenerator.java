@@ -30,7 +30,7 @@ public class CodeGenerator {
 
         // 策略配置
         StrategyConfig strategyConfig = new StrategyConfig();
-        strategyConfig.setInclude("sys_menu") // 指定需要生成代码的表名
+        strategyConfig.setInclude("sys_post") // 指定需要生成代码的表名
                 .setNaming(NamingStrategy.underline_to_camel) // 设置表名转类名策略
                 .setColumnNaming(NamingStrategy.underline_to_camel) // 设置列名转属性名策略
                 .setEntityLombokModel(true) // 设置实体类使用Lombok模型
