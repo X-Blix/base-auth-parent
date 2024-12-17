@@ -4,6 +4,8 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.liuy.common.result.Result;
 
+import com.example.liuy.log.annotation.Log;
+import com.example.liuy.log.type.BusinessType;
 import com.example.liuy.model.system.SysRole;
 import com.example.liuy.model.vo.AssginRoleVo;
 import com.example.liuy.model.vo.SysRoleQueryVo;
@@ -74,6 +76,7 @@ public class SysRoleController {
     }
 
     //4.添加角色
+    @Log(title = "角色管理", businessType = BusinessType.INSERT)
     @PreAuthorize("hasAuthority('bnt.sysRole.add')")
     @ApiOperation(value = "新增角色")
     @PostMapping("/save")

@@ -5,7 +5,9 @@ import com.example.liuy.common.helper.JwtHelper;
 import com.example.liuy.common.result.Result;
 import com.example.liuy.common.result.ResultCodeEnum;
 import com.example.liuy.common.utils.ResponseUtil;
-import com.example.liuy.model.system.SysLoginLog;
+import com.example.liuy.log.service.SysLoginLogService;
+
+import com.example.liuy.log.util.IpUtil;
 import com.example.liuy.model.vo.LoginVo;
 import com.example.liuy.system.custom.CustomUser;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -23,8 +25,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.time.Duration;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -34,12 +34,16 @@ public class TokenLoginFilter extends UsernamePasswordAuthenticationFilter {
 
     private RedisTemplate redisTemplate;
 
-    public TokenLoginFilter(AuthenticationManager authenticationManager, RedisTemplate redisTemplate) {
+    private SysLoginLogService asyncSysLoginLogService;
+
+    public TokenLoginFilter(AuthenticationManager authenticationManager, RedisTemplate redisTemplate, SysLoginLogService sysLoginLogService) {
+        this.asyncSysLoginLogService = sysLoginLogService;
         this.setAuthenticationManager(authenticationManager);
         this.setPostOnly(false);
         //指定登录接口及提交方式，可以指定任意路径
         this.setRequiresAuthenticationRequestMatcher(new AntPathRequestMatcher("/admin/system/index/login","POST"));
         this.redisTemplate = redisTemplate;
+
     }
 
     /**
@@ -63,6 +67,7 @@ public class TokenLoginFilter extends UsernamePasswordAuthenticationFilter {
 
     }
 
+
     /**
      * 登录成功
      * @param request
@@ -77,13 +82,19 @@ public class TokenLoginFilter extends UsernamePasswordAuthenticationFilter {
                                             Authentication auth) throws IOException, ServletException {
         CustomUser customUser = (CustomUser) auth.getPrincipal();
         String token = JwtHelper.createToken(customUser.getSysUser().getId(), customUser.getSysUser().getUsername());
+
         //保存权限数据
         redisTemplate.opsForValue().set(customUser.getUsername(), JSON.toJSONString(customUser.getAuthorities()));
+
+        //记录日志
+        asyncSysLoginLogService.recordLoginLog(customUser.getUsername(), 0, IpUtil.getIpAddress(request), "登录成功");
+
 
         Map<String, Object> map = new HashMap<>();
         map.put("token", token);
         ResponseUtil.out(response, Result.ok(map));
     }
+
 
     /**
      * 登录失败

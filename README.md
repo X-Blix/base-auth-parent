@@ -1072,3 +1072,54 @@ public Result error(AccessDeniedException e) throws AccessDeniedException {
 
 2.岗位管理接口：仿照角色管理接口进行编写
 
+### 第九次提交：（日志部分）
+
+_log:存放日志相关内容的包_
+
+AOP：不修改原代码但是增强功能
+
+
+##### 功能实现-添加登录日志 后端
+1. 创建AsyncLoginLogService
+2. AsyncLoginLogServiceImpl
+3. SysLoginLogMapper
+4. AsyncLoginLogService
+5. TokenLoginFilter
+```this.asyncSysLoginLogService = asyncSysLoginLogService;```
+
+5. 添加IpUtil
+6. WebSecurityConfig
+7. 测试，无误
+
+##### 功能实现-添加操作日志 后端
+1.导包 <artifactId>spring-boot-starter-aop</artifactId>
+2. 创建自定义注解Log
+3.创建枚举类  BusinessType 和  OperatorType
+4. 添加LogAspect
+5.创建OperLogService
+6.注入LogAspect
+```
+    @Autowired
+    private SysOperLogService sysOperLogService;
+
+```
+7.SysOperLogServiceImpl
+8.SysOperLogMapper
+9.使用方式：
+```
+已角色管理为例：
+
+使用自定义标签记录日志
+
+@Log(title = “角色管理”, businessType = BusinessType.INSERT)
+```
+
+测试报错403：忘记启动redis了
+
+
+这两块思路有点乱...
+
+
+##### 功能实现-添加登录日志 前端
+1.SysLoginLogController
+
