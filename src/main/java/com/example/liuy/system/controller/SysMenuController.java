@@ -1,11 +1,14 @@
 package com.example.liuy.system.controller;
 
 
+import com.example.liuy.log.annotation.Log;
+import com.example.liuy.log.type.BusinessType;
 import com.example.liuy.model.system.SysMenu;
 import com.example.liuy.model.vo.AssginMenuVo;
 import com.example.liuy.system.service.SysMenuService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +35,7 @@ public class SysMenuController {
     private SysMenuService sysMenuService;
 
     // 1. 菜单列表（树形）
+    @PreAuthorize("hasAuthority('bnt.sysMenu.list')")
     @ApiOperation(value = "获取菜单")
     @GetMapping("findNodes")
     public Result findNodes() {
@@ -40,6 +44,8 @@ public class SysMenuController {
     }
 
     // 2. 添加菜单
+    @Log(title = "菜单管理", businessType = BusinessType.INSERT)
+    @PreAuthorize("hasAuthority('bnt.sysMenu.add')")
     @ApiOperation(value = "新增菜单")
     @PostMapping("save")
     public Result save(@RequestBody SysMenu permission) {
@@ -48,6 +54,7 @@ public class SysMenuController {
     }
 
     //3.根据id 查询
+    @PreAuthorize("hasAuthority('bnt.sysMenu.list')")
     @ApiOperation(value = "根据id查询菜单")
     @PostMapping("findNode/{id}")
     public Result findNode(@PathVariable String id) {
@@ -56,6 +63,8 @@ public class SysMenuController {
     }
 
     //4.修改
+    @Log(title = "菜单管理", businessType = BusinessType.UPDATE)
+    @PreAuthorize("hasAuthority('bnt.sysMenu.update')")
     @ApiOperation(value = "修改菜单")
     @PostMapping("update")
     public Result updateById(@RequestBody SysMenu permission) {
@@ -64,6 +73,8 @@ public class SysMenuController {
     }
 
     //5.删除菜单
+    @Log(title = "菜单管理", businessType = BusinessType.DELETE)
+    @PreAuthorize("hasAuthority('bnt.sysMenu.remove')")
     @ApiOperation(value = "删除菜单")
     @DeleteMapping("remove/{id}")
     public Result remove(@PathVariable String id) {
@@ -77,6 +88,7 @@ public class SysMenuController {
     //----------------------------------------
 
     //1.根据角色获取菜单
+    @PreAuthorize("hasAuthority('bnt.sysMenu.list')")
     @ApiOperation(value = "根据角色获取菜单")
     @GetMapping("/toAssign/{roleId}")
     public Result toAssign(@PathVariable String roleId) {
@@ -91,6 +103,8 @@ public class SysMenuController {
 
 
     //2.给角色分配权限
+    @Log(title = "菜单管理", businessType = BusinessType.ASSGIN)
+    @PreAuthorize("hasAuthority('bnt.sysRole.assignAuth')")
     @ApiOperation(value = "给角色分配权限")
     @PostMapping("/doAssign")
     public Result doAssign(@RequestBody AssginMenuVo assginMenuVo) {

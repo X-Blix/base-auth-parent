@@ -45,6 +45,7 @@ public class SysRoleController {
 
 
     //2.逻辑删除角色
+    @Log(title = "角色管理", businessType = BusinessType.DELETE)
     @PreAuthorize("hasAuthority('bnt.sysRole.remove')")
     @ApiOperation(value = "删除角色")
     @DeleteMapping("/remove/{id}")
@@ -82,7 +83,6 @@ public class SysRoleController {
     @PostMapping("/save")
 
 //    知识点：
-//
 //    @RequestBody，不能使用get提交方式
 //    传递json格式数据，把json格式数据封装到对象里面
     public Result save(@RequestBody SysRole role) {
@@ -95,6 +95,7 @@ public class SysRoleController {
     }
 
     //5.修改
+    @Log(title = "角色管理", businessType = BusinessType.UPDATE)
     @PreAuthorize("hasAuthority('bnt.sysRole.update')")
     @ApiOperation(value = "修改角色")
 //    @PutMapping("/update")
@@ -111,6 +112,7 @@ public class SysRoleController {
 
 
     //6.批量删除
+    @Log(title = "角色管理", businessType = BusinessType.DELETE)
     @PreAuthorize("hasAuthority('bnt.sysRole.remove')")
     @ApiOperation(value = "批量删除角色")
     @DeleteMapping("/batchRemove")
@@ -141,7 +143,7 @@ public class SysRoleController {
         return Result.ok(roleMap);
     }
 
-
+    @Log(title = "角色管理", businessType = BusinessType.ASSGIN)
     @PreAuthorize("hasAuthority('bnt.sysUser.assignRole')")
     @ApiOperation(value = "根据用户分配角色")
     @PostMapping("/doAssign")

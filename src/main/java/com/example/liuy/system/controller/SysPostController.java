@@ -4,6 +4,7 @@ package com.example.liuy.system.controller;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.liuy.common.result.Result;
+import com.example.liuy.log.type.BusinessType;
 import com.example.liuy.model.system.SysDept;
 import com.example.liuy.model.system.SysPost;
 import com.example.liuy.model.system.SysRole;
@@ -17,7 +18,7 @@ import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
+import com.example.liuy.log.annotation.Log;
 import java.util.List;
 
 /**
@@ -37,6 +38,7 @@ public class SysPostController {
     private SysPostService sysPostService;
 
     //1.查询所有接口
+
     @PreAuthorize("hasAuthority('bnt.sysPost.list')")
     @ApiOperation(value = "获取全部岗位列表")
     @GetMapping("/findAll")
@@ -47,6 +49,7 @@ public class SysPostController {
     }
 
     //2.逻辑删除
+    @Log(title = "岗位管理", businessType = BusinessType.DELETE)
     @PreAuthorize("hasAuthority('bnt.sysPost.remove')")
     @ApiOperation(value = "删除岗位")
     @DeleteMapping("/remove/{id}")
@@ -81,6 +84,7 @@ public class SysPostController {
 
 
     //4.添加角色
+    @Log(title = "岗位管理", businessType = BusinessType.INSERT)
     @PreAuthorize("hasAuthority('bnt.sysPost.add')")
     @ApiOperation(value = "新增岗位")
     @PostMapping("/save")
@@ -91,6 +95,7 @@ public class SysPostController {
 
 
     //5.修改
+    @Log(title = "岗位管理", businessType = BusinessType.UPDATE)
     @PreAuthorize("hasAuthority('bnt.sysPost.update')")
     @ApiOperation(value = "修改岗位")
     @PostMapping("/update")
@@ -105,6 +110,7 @@ public class SysPostController {
     }
 
     //6.批量删除
+    @Log(title = "岗位管理", businessType = BusinessType.DELETE)
     @PreAuthorize("hasAuthority('bnt.sysPost.remove')")
     @ApiOperation(value = "批量删除")
     @DeleteMapping("/batchRemove")
@@ -118,6 +124,7 @@ public class SysPostController {
     }
 
     //7.根据id获取数据
+    @PreAuthorize("hasAuthority('bnt.sysPost.list')")
     @ApiOperation(value = "获取详情")
     @GetMapping("/get/{id}")
     public Result get(@PathVariable String id) {

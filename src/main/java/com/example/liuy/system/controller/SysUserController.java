@@ -5,6 +5,8 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 
 import com.example.liuy.common.result.Result;
 import com.example.liuy.common.utils.MD5;
+import com.example.liuy.log.annotation.Log;
+import com.example.liuy.log.type.BusinessType;
 import com.example.liuy.model.system.SysUser;
 import com.example.liuy.model.vo.SysUserQueryVo;
 import com.example.liuy.system.service.SysUserService;
@@ -14,6 +16,7 @@ import io.swagger.annotations.ApiParam;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -32,6 +35,8 @@ public class SysUserController {
     @Autowired
     private SysUserService sysUserService;
 
+    @Log(title = "用户管理", businessType = BusinessType.STATUS)
+    @PreAuthorize("hasAuthority('bnt.sysUser.update')")
     @ApiOperation(value = "更改用户状态")
     @GetMapping("updateStatus/{id}/{status}")
     public Result updateStatus(@PathVariable String id, @PathVariable Integer status) {
@@ -40,6 +45,7 @@ public class SysUserController {
     }
 
     //1.分页列表
+    @PreAuthorize("hasAuthority('bnt.sysUser.list')")
     @ApiOperation(value = "获取分页列表")
     @GetMapping("/{page}/{limit}")
     public Result index(
@@ -58,6 +64,8 @@ public class SysUserController {
 
 
     //2.添加用户
+    @Log(title = "用户管理", businessType = BusinessType.INSERT)
+    @PreAuthorize("hasAuthority('bnt.sysUser.add')")
     @ApiOperation(value = "添加用户")
     @PostMapping("/save")
     public Result save(@RequestBody SysUser user) {
@@ -73,6 +81,7 @@ public class SysUserController {
 
 
     // 3. 根据id查询
+    @PreAuthorize("hasAuthority('bnt.sysUser.list')")
     @ApiOperation(value = "查询用户")
     @GetMapping("/getUser/{id}")
     public Result get(@PathVariable String id) {
@@ -81,6 +90,8 @@ public class SysUserController {
     }
 
     //4.修改用户
+    @Log(title = "用户管理", businessType = BusinessType.UPDATE)
+    @PreAuthorize("hasAuthority('bnt.sysUser.update')")
     @ApiOperation(value = "修改用户")
     @PostMapping("/update")
     public Result updateById(@RequestBody SysUser user) {
@@ -96,6 +107,8 @@ public class SysUserController {
     }
 
     //5.删除用户
+    @Log(title = "用户管理", businessType = BusinessType.DELETE)
+    @PreAuthorize("hasAuthority('bnt.sysUser.remove')")
     @ApiOperation(value = "删除用户")
     @DeleteMapping("/remove/{id}")
     public Result remove(@PathVariable String id) {

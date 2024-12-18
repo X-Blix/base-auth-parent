@@ -1,5 +1,6 @@
 package com.example.liuy.system.controller;
 
+ import com.example.liuy.log.type.BusinessType;
  import com.example.liuy.model.vo.SysDeptQueryVo;
 import com.example.liuy.common.result.Result;
 import com.example.liuy.model.system.SysDept;
@@ -10,6 +11,7 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
  import org.springframework.security.access.prepost.PreAuthorize;
  import org.springframework.web.bind.annotation.*;
+ import com.example.liuy.log.annotation.Log;
 
  import java.util.List;
  import java.util.Map;
@@ -33,6 +35,7 @@ public class SysDeptController {
 
 
     // 1. 部门列表（树形）
+    @PreAuthorize("hasAuthority('bnt.sysDept.list')")
     @ApiOperation(value = "获取部门")
     @GetMapping("/findNodes")
     public Result findNodes() {
@@ -42,6 +45,9 @@ public class SysDeptController {
 
 
     //2.添加部门
+
+    @Log(title = "部门管理", businessType = BusinessType.INSERT)
+    @PreAuthorize("hasAuthority('bnt.sysDept.add')")
     @ApiOperation(value = "新增部门")
     @PostMapping("/save")
     public Result save(@RequestBody SysDept sysDept) {
@@ -50,6 +56,7 @@ public class SysDeptController {
     }
 
     //3.根据id查询
+    @PreAuthorize("hasAuthority('bnt.sysDept.list')")
     @ApiOperation(value = "根据id查询部门")
     @GetMapping("/findNode/{id}")
     public Result findNode(@PathVariable String id) {
@@ -58,6 +65,8 @@ public class SysDeptController {
     }
 
     //4.修改部门
+    @Log(title = "部门管理", businessType = BusinessType.UPDATE)
+    @PreAuthorize("hasAuthority('bnt.sysDept.update')")
     @ApiOperation(value = "修改部门")
     @PutMapping("update")
     public Result updateById(@RequestBody SysDept sysDept) {
@@ -66,6 +75,8 @@ public class SysDeptController {
     }
 
     //5.删除菜单
+    @Log(title = "部门管理", businessType = BusinessType.DELETE)
+    @PreAuthorize("hasAuthority('bnt.sysDept.remove')")
     @ApiOperation(value = "删除部门")
     @DeleteMapping("remove/{id}")
     public Result remove(@PathVariable String id) {
@@ -73,6 +84,7 @@ public class SysDeptController {
         return Result.ok();
     }
 
+    @PreAuthorize("hasAuthority('bnt.sysDept.list')")
     @ApiOperation(value = "获取部门详情")
     @GetMapping("/get/{id}")
     public Result get(@PathVariable String id) {
